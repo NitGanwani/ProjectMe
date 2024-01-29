@@ -1,7 +1,8 @@
-import mongoose from 'mongoose';
+import { Schema, model } from 'mongoose';
 import bcrypt from 'bcrypt';
+import { User } from '../entities/user';
 
-const userSchema = new mongoose.Schema(
+const userSchema = new Schema<User>(
   {
     name: {
       type: String,
@@ -32,5 +33,9 @@ userSchema.pre('save', async function (next) {
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-const User = mongoose.model('User', userSchema);
-export default User;
+userSchema.methods.comparePassword = async function (password: string) {
+  // eslint-disable-next-line no-return-await
+  return await bcrypt.compare(password, this.password);
+};
+
+export const UserModel = model<User>('User', userSchema);
