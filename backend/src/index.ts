@@ -1,8 +1,7 @@
-import express from 'express';
 import { createServer } from 'http';
 import dbConnect from './config/db.js';
+import { app } from './app.js';
 
-const app = express();
 const server = createServer(app);
 const PORT = process.env.PORT || 7000;
 
