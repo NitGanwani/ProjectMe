@@ -116,3 +116,8 @@ export const resetPassword = async (req: Request, res: Response) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
+export const getUserProfile = async (req: Request, res: Response) => {
+  const { user } = req;
+  res.status(200).json(user);
+};
