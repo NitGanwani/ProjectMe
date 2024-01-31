@@ -65,3 +65,54 @@ export const confirmUser = async (req: Request, res: Response) => {
     console.log(error);
   }
 };
+
+export const forgotPassword = async (req: Request, res: Response) => {
+  const { email } = req.body;
+  const existingUser = await UserModel.findOne({ email });
+  if (!existingUser) {
+    const error = new Error('User does not exist');
+    return res.status(400).json({ message: error.message });
+  }
+
+  try {
+    existingUser.token = generateId();
+    await existingUser.save();
+    res.status(200).json({ message: 'Email sent with the instructions' });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const checkToken = async (req: Request, res: Response) => {
+  const { token } = req.params;
+
+  const validToken = await UserModel.findOne({ token });
+
+  if (validToken) {
+    res.status(200).json({ message: 'Token is valid' });
+  } else {
+    const error = new Error('Invalid token');
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  const { token } = req.params;
+  const { password } = req.body;
+
+  const user = await UserModel.findOne({ token });
+
+  if (user) {
+    user.password = password;
+    user.token = '';
+    try {
+      await user.save();
+      res.status(200).json({ message: 'Password updated' });
+    } catch (error) {
+      console.log(error);
+    }
+  } else {
+    const error = new Error('Invalid token');
+    return res.status(400).json({ message: error.message });
+  }
+};
