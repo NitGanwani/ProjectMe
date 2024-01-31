@@ -1,6 +1,7 @@
 import { UserModel } from './../models/User.js';
 import { Request, Response } from 'express';
 import { generateId } from '../helpers/generateId.js';
+import { generateJWT } from '../helpers/generateJWT.js';
 
 export const registerUser = async (req: Request, res: Response) => {
   const { email } = req.body;
@@ -39,9 +40,28 @@ export const loginUser = async (req: Request, res: Response) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      token: generateJWT(user._id),
     });
   } else {
     const error = new Error('Invalid credentials');
     return res.status(403).json({ message: error.message });
+  }
+};
+
+export const confirmUser = async (req: Request, res: Response) => {
+  const { token } = req.params;
+  const confirmedUser = await UserModel.findOne({ token });
+  if (!confirmedUser) {
+    const error = new Error('Invalid token');
+    return res.status(400).json({ message: error.message });
+  }
+
+  try {
+    confirmedUser.isConfirmed = true;
+    confirmedUser.token = '';
+    await confirmedUser.save();
+    res.status(200).json(confirmedUser);
+  } catch (error) {
+    console.log(error);
   }
 };
